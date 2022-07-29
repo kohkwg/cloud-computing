@@ -1,0 +1,63 @@
+const aws = require("aws-sdk");
+
+const docClient = new aws.DynamoDB.DocumentClient({region:'us-east-1'});
+
+exports.handler = async function(event,context,callback){
+    
+    console.log(event);
+    let firstname = "Xaver";
+    let lastname = "Tan";
+    let emailaddress = "xaver@email.com";
+    
+    if (event.queryStringParameters && event.queryStringParameters.firstname){
+        console.log("First Name check: "+ event.queryStringParameters.firstname);
+        firstname = event.queryStringParameters.firstname;
+    }
+
+    if (event.queryStringParameters &&  event.queryStringParameters.lastname){
+        console.log("Last Name Check: "+ event.queryStringParameters.lastname);
+        lastname = event.queryStringParameters.lastname;
+    }
+
+
+    if (event.queryStringParameters &&  event.queryStringParameters.emailaddress){
+        console.log("Email Check: "+ event.queryStringParameters.emailaddress);
+        emailaddress = event.queryStringParameters.emailaddress;
+    }
+    
+    console.log("Inserting data");
+    var params = { TableName:"customertable",
+    Item: { firstname:event.queryStringParameters.firstname,
+            lastname:event.queryStringParameters.lastname,
+            emailaddress:event.queryStringParameters.emailaddress
+    }
+    };
+    
+    const response = { isBase64Encoded:false,
+    statusCode:200,
+    headers:{
+        "Access-Control-Allow-Headers":"Content-Type",
+        "Access-Control-Allow-Origin":"*",
+        "Access-Control-Allow-Methods":"OPTIONS,POST,GET",
+        "Content-Type":"applications/json"
+    },
+    body:"First Name: " + firstname + "\nLastName: " + lastname + "\nEmail Address " + emailaddress 
+    };
+    
+    docClient.put(params,function(err,data){
+        if (err){
+            console.log("Error");
+            //callback(err,null);
+            response.statusCode = 500;
+            
+        } else{
+            //response.statusCode = 200;
+            response.body = "Data inserted";
+            console.log("Data Inserted Sucessfully");
+            
+            
+        }
+    });
+    
+    return response;
+};
